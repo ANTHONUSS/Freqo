@@ -156,7 +156,9 @@ fun FreqoBottomBar(
                     alwaysShowLabel = fr.anthonus.freqo.data.Settings.showBottomBarLabels,
                     icon = {
                         Icon(
-                            painter = painterResource(tab.icon),
+                            painter = painterResource(
+                                if (isSelected) tab.iconSelected else tab.icon
+                            ),
                             contentDescription = tab.iconDescription,
                             modifier = Modifier.scale(scale)
                         )

@@ -7,12 +7,33 @@ import kotlinx.serialization.Serializable
 enum class Tab(
     val label: String,
     val icon: Int,
+    val iconSelected: Int,
     val iconDescription: String,
 ) {
-    HOME("Accueil", R.drawable.home_24, "Bouton accueil"),
-    SPACES("Espaces", R.drawable.spaces_24, "Bouton espaces"),
-    CALENDAR("Calendrier", R.drawable.calendar_24, "Bouton calendrier"),
-    SETTINGS("Paramètres", R.drawable.settings_24, "Bouton profil"),
+    HOME(
+        "Accueil",
+        R.drawable.home_outlined,
+        R.drawable.home_filled,
+        "Bouton accueil"
+    ),
+    SPACES(
+        "Espaces",
+        R.drawable.space_outlined,
+        R.drawable.space_filled,
+        "Bouton espaces"
+    ),
+    CALENDAR(
+        "Calendrier",
+        R.drawable.calendar_outlined,
+        R.drawable.calendar_filled,
+        "Bouton calendrier"
+    ),
+    SETTINGS(
+        "Paramètres",
+        R.drawable.settings_outlined,
+        R.drawable.settings_filled,
+        "Bouton profil"
+    ),
 }
 
 @Serializable
