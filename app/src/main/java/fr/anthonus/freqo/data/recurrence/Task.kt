@@ -1,4 +1,4 @@
-package fr.anthonus.freqo.data
+package fr.anthonus.freqo.data.recurrence
 
 import kotlinx.serialization.json.Json
 

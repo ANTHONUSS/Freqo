@@ -1,4 +1,4 @@
-package fr.anthonus.freqo.data.retrofit
+package fr.anthonus.freqo.api.publicholiday
 
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -25,13 +25,13 @@ object NetworkDataSource {
 
     }.build()
 
-    val calendarService: CalendarService by lazy {
+    val publicHolidayService: PublicHolidayService by lazy {
         Retrofit.Builder()
             .client(client)
             .baseUrl(BASE_URL)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
-            .create(CalendarService::class.java)
+            .create(PublicHolidayService::class.java)
     }
 
 }

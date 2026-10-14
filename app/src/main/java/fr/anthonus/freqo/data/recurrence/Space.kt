@@ -1,4 +1,4 @@
-package fr.anthonus.freqo.data
+package fr.anthonus.freqo.data.recurrence
 
 data class Space(
     val id: String = "",

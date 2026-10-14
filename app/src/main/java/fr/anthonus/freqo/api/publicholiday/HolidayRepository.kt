@@ -1,10 +1,10 @@
-package fr.anthonus.freqo.data.retrofit
+package fr.anthonus.freqo.api.publicholiday
 
-import fr.anthonus.freqo.data.PublicHoliday
+import fr.anthonus.freqo.data.publicholiday.PublicHoliday
 import java.time.LocalDate
 
 class HolidayRepository {
-    private val service = NetworkDataSource.calendarService
+    private val service = NetworkDataSource.publicHolidayService
 
     suspend fun fetchHolidays(year: Int, zone: String = "metropole"): Resource<List<PublicHoliday>> {
         return try {

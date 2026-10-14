@@ -35,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import fr.anthonus.freqo.data.retrofit.HolidayRepository
-import fr.anthonus.freqo.data.retrofit.Resource
+import fr.anthonus.freqo.api.publicholiday.HolidayRepository
+import fr.anthonus.freqo.api.publicholiday.Resource
 import fr.anthonus.freqo.navigation.Calendar
 import fr.anthonus.freqo.navigation.Home
 import fr.anthonus.freqo.navigation.Settings
@@ -59,16 +59,15 @@ class MainActivity : ComponentActivity() {
             when (val result = repository.fetchHolidays(2026)) {
                 is Resource.Success -> {
                     result.data.forEach { holiday ->
-                        Log.d("HOLIDAYS_TEST", "${holiday.date} -> ${holiday.name}")
+                        Log.d("RETROFIT_TEST", "${holiday.date} -> ${holiday.name}")
                     }
                 }
 
                 is Resource.Error -> {
-                    Log.e("HOLIDAYS_TEST", "Erreur : ${result.error}")
+                    Log.e("RETROFIT_TEST", "Erreur : ${result.error}")
                 }
             }
         }
-
         // ===================
 
         enableEdgeToEdge()
