@@ -1,9 +1,5 @@
 package fr.anthonus.freqo.data.recurrence
 
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeParseException
-
 private val byDayRegex = Regex("(-1|[1-5])?(MO|TU|WE|TH|FR|SA|SU)")
 private val byDayWithOrdinalRegex = Regex("(-1|[1-5])(MO|TU|WE|TH|FR|SA|SU)")
 private val byDayWithoutOrdinalRegex = Regex("(MO|TU|WE|TH|FR|SA|SU)")
@@ -96,14 +92,3 @@ fun RecurrenceRule.validate(): List<RuleError> {
     return errors
 }
 
-private fun parseDate(dateText: String): LocalDateTime? {
-    return try {
-        LocalDateTime.parse(dateText)
-    } catch (_: DateTimeParseException) {
-        try {
-            LocalDate.parse(dateText).atStartOfDay()
-        } catch (_: DateTimeParseException) {
-            null
-        }
-    }
-}
