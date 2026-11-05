@@ -1,4 +1,4 @@
-package fr.anthonus.freqo.ui
+package fr.anthonus.freqo.view
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text

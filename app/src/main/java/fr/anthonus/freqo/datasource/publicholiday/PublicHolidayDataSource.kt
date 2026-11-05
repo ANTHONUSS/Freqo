@@ -1,4 +1,4 @@
-package fr.anthonus.freqo.api.publicholiday
+package fr.anthonus.freqo.datasource.publicholiday
 
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType

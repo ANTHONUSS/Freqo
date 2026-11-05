@@ -1,7 +1,6 @@
 package fr.anthonus.freqo
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -32,11 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import fr.anthonus.freqo.api.publicholiday.HolidayRepository
-import fr.anthonus.freqo.api.publicholiday.Resource
 import fr.anthonus.freqo.navigation.Calendar
 import fr.anthonus.freqo.navigation.Home
 import fr.anthonus.freqo.navigation.Settings
@@ -46,29 +42,10 @@ import fr.anthonus.freqo.navigation.Tab
 import fr.anthonus.freqo.navigation.Task
 import fr.anthonus.freqo.navigation.appEntryProvider
 import fr.anthonus.freqo.ui.theme.FreqoTheme
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // ====== TESTS ====== TODO: remove this
-        val repository = HolidayRepository()
-
-        lifecycleScope.launch {
-            when (val result = repository.fetchHolidays(2026)) {
-                is Resource.Success -> {
-                    result.data.forEach { holiday ->
-                        Log.d("RETROFIT_TEST", "${holiday.date} -> ${holiday.name}")
-                    }
-                }
-
-                is Resource.Error -> {
-                    Log.e("RETROFIT_TEST", "Erreur : ${result.error}")
-                }
-            }
-        }
-        // ===================
 
         enableEdgeToEdge()
         setContent {

@@ -1,4 +1,4 @@
-package fr.anthonus.freqo.api.publicholiday
+package fr.anthonus.freqo.datasource.publicholiday
 
 import retrofit2.http.GET
 import retrofit2.http.Path

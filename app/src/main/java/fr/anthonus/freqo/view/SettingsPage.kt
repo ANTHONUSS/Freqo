@@ -1,4 +1,4 @@
-package fr.anthonus.freqo.ui
+package fr.anthonus.freqo.view
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer

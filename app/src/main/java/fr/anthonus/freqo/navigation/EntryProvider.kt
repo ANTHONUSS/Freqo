@@ -2,12 +2,12 @@ package fr.anthonus.freqo.navigation
 
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import fr.anthonus.freqo.ui.CalendarPage
-import fr.anthonus.freqo.ui.HomePage
-import fr.anthonus.freqo.ui.SettingsPage
-import fr.anthonus.freqo.ui.SpacePage
-import fr.anthonus.freqo.ui.SpacesPage
-import fr.anthonus.freqo.ui.TaskPage
+import fr.anthonus.freqo.view.CalendarPage
+import fr.anthonus.freqo.view.HomePage
+import fr.anthonus.freqo.view.SettingsPage
+import fr.anthonus.freqo.view.SpacePage
+import fr.anthonus.freqo.view.SpacesPage
+import fr.anthonus.freqo.view.TaskPage
 
 fun appEntryProvider(
     onNavigationToSpace: (Int) -> Unit,
