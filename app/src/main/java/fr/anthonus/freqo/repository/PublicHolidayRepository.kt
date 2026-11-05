@@ -9,7 +9,7 @@ import kotlin.coroutines.cancellation.CancellationException
 object PublicHolidayRepository {
     private val publicHolidayService = NetworkDataSource.publicHolidayService
 
-    suspend fun getPublicHolidays(year: Int, zone: String = "metropole"): Resource<List<PublicHoliday>> {
+    suspend fun getPublicHolidays( zone: String, year: Int): Resource<List<PublicHoliday>> {
         return try {
             val rawMap: Map<String, String> = publicHolidayService.getHolidaysByYear(zone = zone, year = year)
 
@@ -21,8 +21,6 @@ object PublicHolidayRepository {
             }
 
             Resource.Success(holidaysList)
-        } catch (e: CancellationException) {
-            throw e
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Erreur réseau inconnue")
         }
