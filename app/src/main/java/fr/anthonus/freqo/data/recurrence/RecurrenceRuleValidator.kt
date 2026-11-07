@@ -41,7 +41,7 @@ fun RecurrenceRule.validate(): List<RuleError> {
     if (byMinute != null && byHour == null) errors.add(RuleError.BY_MINUTE_WITHOUT_HOUR)
 
     val start = parseDate(startDate)
-    val end = until?.let { parseDate(it) }
+    val end = until?.let { parseDate(it, END_OF_DAY) }
     if (start == null) errors.add(RuleError.INVALID_START_DATE)
     if (until != null && end == null) errors.add(RuleError.INVALID_UNTIL)
     if (start != null && end != null && end < start) errors.add(RuleError.UNTIL_BEFORE_START)

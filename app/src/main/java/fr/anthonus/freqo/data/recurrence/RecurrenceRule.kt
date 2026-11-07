@@ -28,7 +28,7 @@ enum class Frequency {
  *     Without them, the occurrence is a plain date (no time)
  * - [fromCompletion]: if true, the next occurrence is computed from
  *     the last completion of the task, instead of the fixed calendar.
- * - [until]: inclusive end date. No occurrence after it
+ * - [until]: inclusive end date. No occurrence after it. A date without time means the end of that day
  * - [count]: total number of occurrences, then stop
  *     [until] and [count] are mutually exclusive. Without both, the recurrence is infinite.
  *

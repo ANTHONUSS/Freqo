@@ -25,7 +25,7 @@ object RecurrenceEngine {
         }
 
         val start = parseDate(rule.startDate)!! // validated by rule.validate()
-        val until = rule.until?.let { parseDate(it) }
+        val until = rule.until?.let { parseDate(it, END_OF_DAY) }
 
         val time = if (rule.byHour != null) {
             LocalTime.of(rule.byHour, rule.byMinute ?: 0)

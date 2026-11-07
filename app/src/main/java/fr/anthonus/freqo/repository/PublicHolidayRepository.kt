@@ -4,7 +4,6 @@ import fr.anthonus.freqo.data.publicholiday.PublicHoliday
 import fr.anthonus.freqo.datasource.publicholiday.NetworkDataSource
 import fr.anthonus.freqo.datasource.publicholiday.Resource
 import java.time.LocalDate
-import kotlin.coroutines.cancellation.CancellationException
 
 object PublicHolidayRepository {
     private val publicHolidayService = NetworkDataSource.publicHolidayService

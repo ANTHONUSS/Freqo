@@ -3,16 +3,19 @@ package fr.anthonus.freqo.data.recurrence
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeParseException
 import java.time.temporal.TemporalAdjusters
 
-fun parseDate(dateText: String): LocalDateTime? {
+val END_OF_DAY: LocalTime = LocalTime.of(23, 59, 59)
+
+fun parseDate(dateText: String, defaultTime: LocalTime = LocalTime.MIDNIGHT): LocalDateTime? {
     return try {
         LocalDateTime.parse(dateText)
     } catch (_: DateTimeParseException) {
         try {
-            LocalDate.parse(dateText).atStartOfDay()
+            LocalDate.parse(dateText).atTime(defaultTime)
         } catch (_: DateTimeParseException) {
             null
         }
