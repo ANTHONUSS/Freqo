@@ -38,7 +38,7 @@ object RecurrenceEngine {
             Frequency.DAILY -> dailyOccurrences(rule, from, to, start, until, time)
             Frequency.WEEKLY -> weeklyOccurrences(rule, from, to, start, until, time)
             Frequency.MONTHLY -> monthlyOccurrences(rule, from, to, start, until, time)
-            else -> emptyList() //TODO: temporary, remove when all other frequencies are implemented
+            Frequency.YEARLY -> yearlyOccurrences(rule, from, to, start, until, time)
         }
     }
 
@@ -102,12 +102,12 @@ object RecurrenceEngine {
             currentDay = currentDay.plusDays(rule.interval.toLong())
 
             if (candidate.isBefore(start)) continue
-            if (until != null && candidate.isAfter(until)) break
-            if (candidate.isAfter(to)) break
+            if (until != null && candidate.isAfter(until)) return occurrencesList
+            if (candidate.isAfter(to)) return occurrencesList
             if (rule.count != null) {
                 occurrenceCount++
                 if (occurrenceCount > rule.count) {
-                    break
+                    return occurrencesList
                 }
             }
             if (candidate.isBefore(from)) continue
@@ -217,6 +217,51 @@ object RecurrenceEngine {
             }
 
             currentMonth = currentMonth.plusMonths(rule.interval.toLong())
+        }
+
+        return occurrencesList
+    }
+
+    private fun yearlyOccurrences(
+        rule: RecurrenceRule,
+        from: LocalDateTime,
+        to: LocalDateTime,
+        start: LocalDateTime,
+        until: LocalDateTime?,
+        time: LocalTime
+    ): List<LocalDateTime> {
+        val targetMonth = rule.byMonth ?: start.monthValue
+        val startYearMonth = YearMonth.of(start.year, targetMonth)
+        val firstPeriodIndex: Long = if (rule.count != null) {
+            0L
+        } else {
+            val yearsSinceStart = (from.year - start.year).toLong()
+            maxOf(0L, yearsSinceStart / rule.interval)
+        }
+
+        var currentMonth = startYearMonth.plusYears(firstPeriodIndex * rule.interval)
+        val windowEndMonth = YearMonth.from(to)
+        var occurrenceCount = 0
+        val occurrencesList = mutableListOf<LocalDateTime>()
+        while (!currentMonth.isAfter(windowEndMonth)) {
+            for (date in datesInMonth(rule, currentMonth, start)) {
+                val candidate = date.atTime(time)
+
+                if (candidate.isBefore(start)) continue
+                if (until != null && candidate.isAfter(until)) return occurrencesList
+                if (candidate.isAfter(to)) return occurrencesList
+                if (rule.count != null) {
+                    occurrenceCount++
+                    if (occurrenceCount > rule.count) {
+                        return occurrencesList
+                    }
+                }
+                if (candidate.isBefore(from)) continue
+
+                occurrencesList.add(candidate)
+            }
+
+            currentMonth = currentMonth.plusYears(rule.interval.toLong())
         }
 
         return occurrencesList
