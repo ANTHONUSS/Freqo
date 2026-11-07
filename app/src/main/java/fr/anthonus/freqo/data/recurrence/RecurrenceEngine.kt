@@ -32,10 +32,46 @@ object RecurrenceEngine {
 
 
         return when (rule.frequency) {
+            Frequency.HOURLY -> hourlyOccurrences(rule, from, to, start, until)
             Frequency.DAILY -> dailyOccurrences(rule, from, to, start, until, time)
             Frequency.WEEKLY -> weeklyOccurrences(rule, from, to, start, until, time)
             else -> emptyList() //TODO: temporary, remove when all other frequencies are implemented
         }
+    }
+
+    private fun hourlyOccurrences(
+        rule: RecurrenceRule,
+        from: LocalDateTime,
+        to: LocalDateTime,
+        start: LocalDateTime,
+        until: LocalDateTime?
+    ): List<LocalDateTime> {
+        val firstPeriodIndex: Long = if (rule.count != null) {
+            0L
+        } else {
+            val hoursSinceStart = ChronoUnit.HOURS.between(start, from)
+            maxOf(0L, hoursSinceStart / rule.interval)
+        }
+
+        var candidate = start.plusHours(firstPeriodIndex * rule.interval)
+        var occurrenceCount = 0
+        val occurrencesList = mutableListOf<LocalDateTime>()
+        while (!candidate.isAfter(to)) {
+            if (until != null && candidate.isAfter(until)) return occurrencesList
+            if (rule.count != null) {
+                occurrenceCount++
+                if (occurrenceCount > rule.count) {
+                    return occurrencesList
+                }
+            }
+            if (!candidate.isBefore(from)) {
+                occurrencesList.add(candidate)
+            }
+
+            candidate = candidate.plusHours(rule.interval.toLong())
+        }
+
+        return occurrencesList
     }
 
     private fun dailyOccurrences(
@@ -102,15 +138,13 @@ object RecurrenceEngine {
         selectedDays.sortBy { weekday -> weekday.value }
 
         val startMonday = start.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-        val firstPeriodIndex: Long
-        if (rule.count != null) {
-            firstPeriodIndex = 0
+        val firstPeriodIndex = if (rule.count != null) {
+            0L
         } else {
             val fromMonday = from.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             val weeksSinceStart = ChronoUnit.WEEKS.between(startMonday, fromMonday)
-            firstPeriodIndex = maxOf(0, weeksSinceStart / rule.interval)
+            maxOf(0, weeksSinceStart / rule.interval)
         }
-
 
         var currentMonday = startMonday.plusWeeks(firstPeriodIndex * rule.interval)
         val windowEndDay = to.toLocalDate()
