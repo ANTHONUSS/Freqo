@@ -1,8 +1,10 @@
 package fr.anthonus.freqo.data.recurrence
 
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
@@ -35,6 +37,7 @@ object RecurrenceEngine {
             Frequency.HOURLY -> hourlyOccurrences(rule, from, to, start, until)
             Frequency.DAILY -> dailyOccurrences(rule, from, to, start, until, time)
             Frequency.WEEKLY -> weeklyOccurrences(rule, from, to, start, until, time)
+            Frequency.MONTHLY -> monthlyOccurrences(rule, from, to, start, until, time)
             else -> emptyList() //TODO: temporary, remove when all other frequencies are implemented
         }
     }
@@ -173,6 +176,50 @@ object RecurrenceEngine {
 
         return occurrencesList
 
+    }
+
+    private fun monthlyOccurrences(
+        rule: RecurrenceRule,
+        from: LocalDateTime,
+        to: LocalDateTime,
+        start: LocalDateTime,
+        until: LocalDateTime?,
+        time: LocalTime
+    ): List<LocalDateTime> {
+        val startMonth = YearMonth.from(start)
+        val firstPeriodIndex: Long = if (rule.count != null) {
+            0L
+        } else {
+            val monthsSinceStart = ChronoUnit.MONTHS.between(startMonth, YearMonth.from(from))
+            maxOf(0L, monthsSinceStart / rule.interval)
+        }
+
+        var currentMonth = startMonth.plusMonths(firstPeriodIndex * rule.interval)
+        val windowEndMonth = YearMonth.from(to)
+        var occurrenceCount = 0
+        val occurrencesList = mutableListOf<LocalDateTime>()
+        while (!currentMonth.isAfter(windowEndMonth)) {
+            for (date in datesInMonth(rule, currentMonth, start)) {
+                val candidate = date.atTime(time)
+
+                if (candidate.isBefore(start)) continue
+                if (until != null && candidate.isAfter(until)) return occurrencesList
+                if (candidate.isAfter(to)) return occurrencesList
+                if (rule.count != null) {
+                    occurrenceCount++
+                    if (occurrenceCount > rule.count) {
+                        return occurrencesList
+                    }
+                }
+                if (candidate.isBefore(from)) continue
+
+                occurrencesList.add(candidate)
+            }
+
+            currentMonth = currentMonth.plusMonths(rule.interval.toLong())
+        }
+
+        return occurrencesList
     }
 
 }
