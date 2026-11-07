@@ -1,16 +1,17 @@
 package fr.anthonus.freqo.data.recurrence
 
-import java.time.DayOfWeek
-import java.time.LocalDate
+import fr.anthonus.freqo.data.recurrence.frequency.DailyFrequency
+import fr.anthonus.freqo.data.recurrence.frequency.FrequencyInterface
+import fr.anthonus.freqo.data.recurrence.frequency.HourlyFrequency
+import fr.anthonus.freqo.data.recurrence.frequency.MonthlyFrequency
+import fr.anthonus.freqo.data.recurrence.frequency.WeeklyFrequency
+import fr.anthonus.freqo.data.recurrence.frequency.YearlyFrequency
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.YearMonth
-import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAdjusters
 
 object RecurrenceEngine {
 
-    fun occurrences(
+    fun getOccurrences(
         rule: RecurrenceRule,
         from: LocalDateTime,
         to: LocalDateTime
@@ -32,131 +33,20 @@ object RecurrenceEngine {
             start.toLocalTime()
         }
 
-
-        return when (rule.frequency) {
-            Frequency.HOURLY -> hourlyOccurrences(rule, from, to, start, until)
-            Frequency.DAILY -> dailyOccurrences(rule, from, to, start, until, time)
-            Frequency.WEEKLY -> weeklyOccurrences(rule, from, to, start, until, time)
-            Frequency.MONTHLY -> monthlyOccurrences(rule, from, to, start, until, time)
-            Frequency.YEARLY -> yearlyOccurrences(rule, from, to, start, until, time)
-        }
-    }
-
-    private fun hourlyOccurrences(
-        rule: RecurrenceRule,
-        from: LocalDateTime,
-        to: LocalDateTime,
-        start: LocalDateTime,
-        until: LocalDateTime?
-    ): List<LocalDateTime> {
-        val firstPeriodIndex: Long = if (rule.count != null) {
-            0L
-        } else {
-            val hoursSinceStart = ChronoUnit.HOURS.between(start, from)
-            maxOf(0L, hoursSinceStart / rule.interval)
+        val frequency: FrequencyInterface = when (rule.frequency) {
+            Frequency.HOURLY -> HourlyFrequency()
+            Frequency.DAILY -> DailyFrequency()
+            Frequency.WEEKLY -> WeeklyFrequency()
+            Frequency.MONTHLY -> MonthlyFrequency()
+            Frequency.YEARLY -> YearlyFrequency()
         }
 
-        var candidate = start.plusHours(firstPeriodIndex * rule.interval)
         var occurrenceCount = 0
         val occurrencesList = mutableListOf<LocalDateTime>()
-        while (!candidate.isAfter(to)) {
-            if (until != null && candidate.isAfter(until)) return occurrencesList
-            if (rule.count != null) {
-                occurrenceCount++
-                if (occurrenceCount > rule.count) {
-                    return occurrencesList
-                }
-            }
-            if (!candidate.isBefore(from)) {
-                occurrencesList.add(candidate)
-            }
 
-            candidate = candidate.plusHours(rule.interval.toLong())
-        }
-
-        return occurrencesList
-    }
-
-    private fun dailyOccurrences(
-        rule: RecurrenceRule,
-        from: LocalDateTime,
-        to: LocalDateTime,
-        start: LocalDateTime,
-        until: LocalDateTime?,
-        time: LocalTime
-    ): List<LocalDateTime> {
-        val startDay = start.toLocalDate()
-        val firstPeriodIndex: Long = if (rule.count != null) {
-            0L
-        } else {
-            val daysSinceStart = ChronoUnit.DAYS.between(startDay, from.toLocalDate())
-            maxOf(0L, daysSinceStart / rule.interval)
-        }
-
-        var currentDay = startDay.plusDays(firstPeriodIndex * rule.interval)
-        var occurrenceCount = 0
-        val windowEndDay = to.toLocalDate()
-        val occurrencesList = mutableListOf<LocalDateTime>()
-        while (!currentDay.isAfter(windowEndDay)) {
-            val candidate = currentDay.atTime(time)
-            currentDay = currentDay.plusDays(rule.interval.toLong())
-
-            if (candidate.isBefore(start)) continue
-            if (until != null && candidate.isAfter(until)) return occurrencesList
-            if (candidate.isAfter(to)) return occurrencesList
-            if (rule.count != null) {
-                occurrenceCount++
-                if (occurrenceCount > rule.count) {
-                    return occurrencesList
-                }
-            }
-            if (candidate.isBefore(from)) continue
-
-            occurrencesList.add(candidate)
-        }
-
-        return occurrencesList
-    }
-
-    private fun weeklyOccurrences(
-        rule: RecurrenceRule,
-        from: LocalDateTime,
-        to: LocalDateTime,
-        start: LocalDateTime,
-        until: LocalDateTime?,
-        time: LocalTime
-    ): List<LocalDateTime> {
-        val selectedDays = mutableListOf<DayOfWeek>()
-        if (rule.byDays.isEmpty()) {
-            selectedDays.add(start.dayOfWeek)
-        } else {
-            for (code in rule.byDays) {
-                for (weekday in DayOfWeek.entries) {
-                    if (weekday.name.take(2) == code && !selectedDays.contains(weekday)) {
-                        selectedDays.add(weekday)
-                    }
-                }
-            }
-        }
-        selectedDays.sortBy { weekday -> weekday.value }
-
-        val startMonday = start.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-        val firstPeriodIndex = if (rule.count != null) {
-            0L
-        } else {
-            val fromMonday = from.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val weeksSinceStart = ChronoUnit.WEEKS.between(startMonday, fromMonday)
-            maxOf(0, weeksSinceStart / rule.interval)
-        }
-
-        var currentMonday = startMonday.plusWeeks(firstPeriodIndex * rule.interval)
-        val windowEndDay = to.toLocalDate()
-        var occurrenceCount = 0
-        val occurrencesList = mutableListOf<LocalDateTime>()
-        while (!currentMonday.isAfter(windowEndDay)) {
-            for (weekday in selectedDays) {
-                val candidate = currentMonday.plusDays((weekday.value - 1).toLong()).atTime(time)
-
+        var period = frequency.firstPeriod(rule, start, from)
+        while (!period.isAfter(to)) {
+            for (candidate in frequency.getCandidates(rule, start, time, period)) {
                 if (candidate.isBefore(start)) continue
                 if (until != null && candidate.isAfter(until)) return occurrencesList
                 if (candidate.isAfter(to)) return occurrencesList
@@ -171,97 +61,7 @@ object RecurrenceEngine {
                 occurrencesList.add(candidate)
             }
 
-            currentMonday = currentMonday.plusWeeks(rule.interval.toLong())
-        }
-
-        return occurrencesList
-
-    }
-
-    private fun monthlyOccurrences(
-        rule: RecurrenceRule,
-        from: LocalDateTime,
-        to: LocalDateTime,
-        start: LocalDateTime,
-        until: LocalDateTime?,
-        time: LocalTime
-    ): List<LocalDateTime> {
-        val startMonth = YearMonth.from(start)
-        val firstPeriodIndex: Long = if (rule.count != null) {
-            0L
-        } else {
-            val monthsSinceStart = ChronoUnit.MONTHS.between(startMonth, YearMonth.from(from))
-            maxOf(0L, monthsSinceStart / rule.interval)
-        }
-
-        var currentMonth = startMonth.plusMonths(firstPeriodIndex * rule.interval)
-        val windowEndMonth = YearMonth.from(to)
-        var occurrenceCount = 0
-        val occurrencesList = mutableListOf<LocalDateTime>()
-        while (!currentMonth.isAfter(windowEndMonth)) {
-            for (date in datesInMonth(rule, currentMonth, start)) {
-                val candidate = date.atTime(time)
-
-                if (candidate.isBefore(start)) continue
-                if (until != null && candidate.isAfter(until)) return occurrencesList
-                if (candidate.isAfter(to)) return occurrencesList
-                if (rule.count != null) {
-                    occurrenceCount++
-                    if (occurrenceCount > rule.count) {
-                        return occurrencesList
-                    }
-                }
-                if (candidate.isBefore(from)) continue
-
-                occurrencesList.add(candidate)
-            }
-
-            currentMonth = currentMonth.plusMonths(rule.interval.toLong())
-        }
-
-        return occurrencesList
-    }
-
-    private fun yearlyOccurrences(
-        rule: RecurrenceRule,
-        from: LocalDateTime,
-        to: LocalDateTime,
-        start: LocalDateTime,
-        until: LocalDateTime?,
-        time: LocalTime
-    ): List<LocalDateTime> {
-        val targetMonth = rule.byMonth ?: start.monthValue
-        val startYearMonth = YearMonth.of(start.year, targetMonth)
-        val firstPeriodIndex: Long = if (rule.count != null) {
-            0L
-        } else {
-            val yearsSinceStart = (from.year - start.year).toLong()
-            maxOf(0L, yearsSinceStart / rule.interval)
-        }
-
-        var currentMonth = startYearMonth.plusYears(firstPeriodIndex * rule.interval)
-        val windowEndMonth = YearMonth.from(to)
-        var occurrenceCount = 0
-        val occurrencesList = mutableListOf<LocalDateTime>()
-        while (!currentMonth.isAfter(windowEndMonth)) {
-            for (date in datesInMonth(rule, currentMonth, start)) {
-                val candidate = date.atTime(time)
-
-                if (candidate.isBefore(start)) continue
-                if (until != null && candidate.isAfter(until)) return occurrencesList
-                if (candidate.isAfter(to)) return occurrencesList
-                if (rule.count != null) {
-                    occurrenceCount++
-                    if (occurrenceCount > rule.count) {
-                        return occurrencesList
-                    }
-                }
-                if (candidate.isBefore(from)) continue
-
-                occurrencesList.add(candidate)
-            }
-
-            currentMonth = currentMonth.plusYears(rule.interval.toLong())
+            period = frequency.nextPeriod(rule, period)
         }
 
         return occurrencesList
