@@ -1,8 +1,10 @@
 package fr.anthonus.freqo.data.recurrence
 
+import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters
 
 object RecurrenceEngine {
 
@@ -31,6 +33,7 @@ object RecurrenceEngine {
 
         return when (rule.frequency) {
             Frequency.DAILY -> dailyOccurrences(rule, from, to, start, until, time)
+            Frequency.WEEKLY -> weeklyOccurrences(rule, from, to, start, until, time)
             else -> emptyList() //TODO: temporary, remove when all other frequencies are implemented
         }
     }
@@ -43,30 +46,28 @@ object RecurrenceEngine {
         until: LocalDateTime?,
         time: LocalTime
     ): List<LocalDateTime> {
-        var counter = 0
-        val occurrencesList = mutableListOf<LocalDateTime>()
-
         val startDay = start.toLocalDate()
-        val endDate = to.toLocalDate()
-
-        val firstPeriod: Long = if (rule.count != null) {
+        val firstPeriodIndex: Long = if (rule.count != null) {
             0L
         } else {
-            val gap = ChronoUnit.DAYS.between(startDay, from.toLocalDate())
-            maxOf(0L, gap / rule.interval)
+            val daysSinceStart = ChronoUnit.DAYS.between(startDay, from.toLocalDate())
+            maxOf(0L, daysSinceStart / rule.interval)
         }
 
-        var day = startDay.plusDays(firstPeriod * rule.interval)
-        while (!day.isAfter(endDate)) {
-            val candidate = day.atTime(time)
-            day = day.plusDays(rule.interval.toLong())
+        var currentDay = startDay.plusDays(firstPeriodIndex * rule.interval)
+        var occurrenceCount = 0
+        val windowEndDay = to.toLocalDate()
+        val occurrencesList = mutableListOf<LocalDateTime>()
+        while (!currentDay.isAfter(windowEndDay)) {
+            val candidate = currentDay.atTime(time)
+            currentDay = currentDay.plusDays(rule.interval.toLong())
 
             if (candidate.isBefore(start)) continue
             if (until != null && candidate.isAfter(until)) break
             if (candidate.isAfter(to)) break
             if (rule.count != null) {
-                counter++
-                if (counter > rule.count) {
+                occurrenceCount++
+                if (occurrenceCount > rule.count) {
                     break
                 }
             }
@@ -76,6 +77,68 @@ object RecurrenceEngine {
         }
 
         return occurrencesList
+    }
+
+    private fun weeklyOccurrences(
+        rule: RecurrenceRule,
+        from: LocalDateTime,
+        to: LocalDateTime,
+        start: LocalDateTime,
+        until: LocalDateTime?,
+        time: LocalTime
+    ): List<LocalDateTime> {
+        val selectedDays = mutableListOf<DayOfWeek>()
+        if (rule.byDays.isEmpty()) {
+            selectedDays.add(start.dayOfWeek)
+        } else {
+            for (code in rule.byDays) {
+                for (weekday in DayOfWeek.entries) {
+                    if (weekday.name.take(2) == code && !selectedDays.contains(weekday)) {
+                        selectedDays.add(weekday)
+                    }
+                }
+            }
+        }
+        selectedDays.sortBy { weekday -> weekday.value }
+
+        val startMonday = start.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val firstPeriodIndex: Long
+        if (rule.count != null) {
+            firstPeriodIndex = 0
+        } else {
+            val fromMonday = from.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val weeksSinceStart = ChronoUnit.WEEKS.between(startMonday, fromMonday)
+            firstPeriodIndex = maxOf(0, weeksSinceStart / rule.interval)
+        }
+
+
+        var currentMonday = startMonday.plusWeeks(firstPeriodIndex * rule.interval)
+        val windowEndDay = to.toLocalDate()
+        var occurrenceCount = 0
+        val occurrencesList = mutableListOf<LocalDateTime>()
+        while (!currentMonday.isAfter(windowEndDay)) {
+            for (weekday in selectedDays) {
+                val candidate = currentMonday.plusDays((weekday.value - 1).toLong()).atTime(time)
+
+                if (candidate.isBefore(start)) continue
+                if (until != null && candidate.isAfter(until)) return occurrencesList
+                if (candidate.isAfter(to)) return occurrencesList
+                if (rule.count != null) {
+                    occurrenceCount++
+                    if (occurrenceCount > rule.count) {
+                        return occurrencesList
+                    }
+                }
+                if (candidate.isBefore(from)) continue
+
+                occurrencesList.add(candidate)
+            }
+
+            currentMonday = currentMonday.plusWeeks(rule.interval.toLong())
+        }
+
+        return occurrencesList
+
     }
 
 }
