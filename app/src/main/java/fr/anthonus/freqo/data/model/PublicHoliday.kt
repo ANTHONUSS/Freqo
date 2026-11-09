@@ -1,4 +1,4 @@
-package fr.anthonus.freqo.data.model.publicholiday
+package fr.anthonus.freqo.data.model
 
 import java.time.LocalDate
 

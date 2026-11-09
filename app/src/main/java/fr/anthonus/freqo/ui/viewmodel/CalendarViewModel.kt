@@ -3,7 +3,6 @@ package fr.anthonus.freqo.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import fr.anthonus.freqo.data.datasource.Resource
 import fr.anthonus.freqo.data.repository.PublicHolidayRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +14,7 @@ class CalendarViewModel(
     private val publicHolidayRepository: PublicHolidayRepository = PublicHolidayRepository
 ) : ViewModel() {
 
-    private val _calendarUiState = MutableStateFlow(CalendarUiState(listOf(), true))
+    private val _calendarUiState = MutableStateFlow(CalendarUiState())
     val calendarUiState: StateFlow<CalendarUiState> = _calendarUiState.asStateFlow()
 
     fun fetchPublicHolidays(year: Int, zone: String = "metropole") {
@@ -24,21 +23,30 @@ class CalendarViewModel(
                 currentState.copy(isLoading = true)
             }
 
-            when (val result = publicHolidayRepository.getPublicHolidays(zone, year)) {
-                is Resource.Success -> {
-                    val publicHolidaysResult = result.data
+            val result = publicHolidayRepository.getPublicHolidays(zone, year)
+            result.fold(
+                onSuccess = { data ->
                     _calendarUiState.update { currentState ->
-                        currentState.copy(publicHolidays = publicHolidaysResult, isLoading = false)
+                        currentState.copy(
+                            publicHolidays = data,
+                            isLoading = false,
+                            errorMessage = null
+                        )
                     }
-                }
-
-                is Resource.Error -> {
+                },
+                onFailure = { error ->
                     Log.e(
                         "CalendarViewModel.fetchPublicHolidays",
-                        "Error fetching data: ${result.error}"
+                        error.toString()
                     )
+                    _calendarUiState.update { currentState ->
+                        currentState.copy(
+                            isLoading = false,
+                            errorMessage = "Error fetching data: ${error.localizedMessage}"
+                        )
+                    }
                 }
-            }
+            )
         }
     }
 
