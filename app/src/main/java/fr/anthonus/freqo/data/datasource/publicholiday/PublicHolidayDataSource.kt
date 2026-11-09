@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 
-object NetworkDataSource {
+object PublicHolidayDataSource {
     private const val BASE_URL = "https://calendrier.api.gouv.fr/jours-feries/"
 
     val interceptor = HttpLoggingInterceptor().apply {
@@ -34,9 +34,4 @@ object NetworkDataSource {
             .create(PublicHolidayService::class.java)
     }
 
-}
-
-sealed class Resource<out T> {
-    data class Success<out T>(val data: T) : Resource<T>()
-    data class Error(val error: String) : Resource<Nothing>()
 }

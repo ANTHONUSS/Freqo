@@ -3,7 +3,7 @@ package fr.anthonus.freqo.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import fr.anthonus.freqo.data.datasource.publicholiday.Resource
+import fr.anthonus.freqo.data.datasource.Resource
 import fr.anthonus.freqo.data.repository.PublicHolidayRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
