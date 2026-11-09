@@ -33,14 +33,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import fr.anthonus.freqo.navigation.Calendar
-import fr.anthonus.freqo.navigation.Home
-import fr.anthonus.freqo.navigation.Settings
-import fr.anthonus.freqo.navigation.Space
-import fr.anthonus.freqo.navigation.Spaces
-import fr.anthonus.freqo.navigation.Tab
-import fr.anthonus.freqo.navigation.Task
-import fr.anthonus.freqo.navigation.appEntryProvider
+import fr.anthonus.freqo.ui.navigation.Calendar
+import fr.anthonus.freqo.ui.navigation.Home
+import fr.anthonus.freqo.ui.navigation.Settings
+import fr.anthonus.freqo.ui.navigation.Space
+import fr.anthonus.freqo.ui.navigation.Spaces
+import fr.anthonus.freqo.ui.navigation.Tab
+import fr.anthonus.freqo.ui.navigation.Task
+import fr.anthonus.freqo.ui.navigation.appEntryProvider
 import fr.anthonus.freqo.ui.theme.FreqoTheme
 
 class MainActivity : ComponentActivity() {
@@ -129,7 +129,7 @@ fun FreqoBottomBar(
                 NavigationBarItem(
                     selected = isSelected,
                     onClick = { onTabSelected(tab) },
-                    alwaysShowLabel = fr.anthonus.freqo.data.Settings.showBottomBarLabels,
+                    alwaysShowLabel = fr.anthonus.freqo.data.model.Settings.showBottomBarLabels,
                     icon = {
                         Icon(
                             painter = painterResource(
