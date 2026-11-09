@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CalendarViewModel(
-    private val publicHolidayRepository: PublicHolidayRepository = PublicHolidayRepository
+    private val publicHolidayRepository: PublicHolidayRepository = PublicHolidayRepository()
 ) : ViewModel() {
 
     private val _calendarUiState = MutableStateFlow(CalendarUiState())

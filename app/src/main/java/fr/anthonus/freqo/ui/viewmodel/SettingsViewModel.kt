@@ -4,7 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.anthonus.freqo.data.model.Settings
-import fr.anthonus.freqo.data.repository.SettingsRepository
+import fr.anthonus.freqo.data.repository.SettingsRepositoryInterface
+import fr.anthonus.freqo.data.repository.SettingsRepositoryMock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val settingsRepository: SettingsRepository = SettingsRepository
+    private val settingsRepository: SettingsRepositoryInterface = SettingsRepositoryMock()
 ): ViewModel() {
     private val _settingsUiState = MutableStateFlow(SettingsUiState())
     val settingsUiState: StateFlow<SettingsUiState> = _settingsUiState.asStateFlow()

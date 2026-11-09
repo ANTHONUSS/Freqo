@@ -4,7 +4,7 @@ import fr.anthonus.freqo.data.datasource.publicholiday.PublicHolidayDataSource
 import fr.anthonus.freqo.data.model.PublicHoliday
 import java.time.LocalDate
 
-object PublicHolidayRepository {
+class PublicHolidayRepository {
     private val publicHolidayService = PublicHolidayDataSource.publicHolidayService
 
     suspend fun getPublicHolidays( zone: String, year: Int): Result<List<PublicHoliday>> {
