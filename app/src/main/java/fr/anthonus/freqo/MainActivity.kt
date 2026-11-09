@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import fr.anthonus.freqo.ui.navigation.Calendar
@@ -42,6 +44,7 @@ import fr.anthonus.freqo.ui.navigation.Tab
 import fr.anthonus.freqo.ui.navigation.Task
 import fr.anthonus.freqo.ui.navigation.appEntryProvider
 import fr.anthonus.freqo.ui.theme.FreqoTheme
+import fr.anthonus.freqo.ui.viewmodel.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +60,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Freqo() {
+fun Freqo(
+    settingsViewModel: SettingsViewModel = viewModel()
+) {
+    val settingsUiState = settingsViewModel.settingsUiState.collectAsStateWithLifecycle()
     var selectedTab by rememberSaveable { mutableStateOf(Tab.HOME) }
 
     val homeBackStack = rememberNavBackStack(Home)
@@ -78,7 +84,8 @@ fun Freqo() {
         bottomBar = {
             FreqoBottomBar(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
+                onTabSelected = { selectedTab = it },
+                showLabels = settingsUiState.value.settings.showBottomBarLabels
             )
         }
     ) { innerPadding ->
@@ -101,6 +108,7 @@ fun Freqo() {
 fun FreqoBottomBar(
     selectedTab: Tab,
     onTabSelected: (Tab) -> Unit,
+    showLabels: Boolean,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -129,7 +137,7 @@ fun FreqoBottomBar(
                 NavigationBarItem(
                     selected = isSelected,
                     onClick = { onTabSelected(tab) },
-                    alwaysShowLabel = fr.anthonus.freqo.data.model.Settings.showBottomBarLabels,
+                    alwaysShowLabel = showLabels,
                     icon = {
                         Icon(
                             painter = painterResource(
@@ -171,7 +179,8 @@ fun FreqoBottomBarPreview() {
     FreqoTheme {
         FreqoBottomBar(
             selectedTab = Tab.HOME,
-            onTabSelected = {}
+            onTabSelected = {},
+            showLabels = true
         )
     }
 }

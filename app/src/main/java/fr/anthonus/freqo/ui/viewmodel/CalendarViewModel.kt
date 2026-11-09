@@ -42,7 +42,7 @@ class CalendarViewModel(
                     _calendarUiState.update { currentState ->
                         currentState.copy(
                             isLoading = false,
-                            errorMessage = "Error fetching data: ${error.localizedMessage}"
+                            errorMessage = "Data is unavailable"
                         )
                     }
                 }
